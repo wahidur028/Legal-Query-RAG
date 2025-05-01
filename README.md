@@ -13,13 +13,9 @@
 ## 🔍 Overview
 
 LQ-RAG explicitly incorporates an agent-based iterative refinement mechanism during inference. It first generates an initial response to a user query and then utilizes an evaluation agent to assess its quality based on contextual relevance and factual grounding. If the response does not meet predefined criteria, the evaluation agent provides feedback to the prompt-engineering agent, which modifies the query to improve the next response. This iterative feedback loop continues until the evaluation scores approach optimal values. The below figure illustrates the overall schematic diagram of the proposed LQ-RAG system.
-
 <img src="img/network_diagram.png" />
 The schematic diagram of the proposed Legal Query RAG. The diagram is divided into two main components: Fine-Tuning (FT) Layer and RAG Layer. The FT Layer focuses on fine-tuning processes of embedding LLM and generative LLM. On the other hand, the RAG Layer incorporates different RAG modules with fine-tuned LLMs, an evaluation agent, and a feedback system designed to enhance the accuracy and quality of the generated responses.
 
-
-
----
 
 ## 🧠 Architecture Components & Execution Flow
 
@@ -31,7 +27,6 @@ The schematic diagram of the proposed Legal Query RAG. The diagram is divided in
 <p align="center">
   <img src="img/execution flow.png"/>
 </p>
----
 
 ## 📈 Key Results
 
@@ -39,7 +34,10 @@ The schematic diagram of the proposed Legal Query RAG. The diagram is divided in
 - **+15%** boost in Mean Reciprocal Rank (MRR)
 - **+24%** performance gain over general LLM baselines
 - **+23%** relevance score improvement vs. naive RAG setups
----
+
+<p align="left">
+  <img src="img/Model_tasks_performance.png"/>
+</p>
 
 ## 🚀 Installation
 
@@ -57,7 +55,6 @@ pip install -r requirements.txt
 python app.py
 ```
 > 📌 **Note**: Before running the application, make sure to update your `.env` file with the required API keys and environment variables.
----
 
 ## 📚 Citation
 
