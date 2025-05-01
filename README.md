@@ -14,7 +14,7 @@ LQ-RAG explicitly incorporates an agent-based iterative refinement mechanism dur
 3. Prompt engineering agent
 4. Fine-tuned legal embedding LLM
 
-<img src="images/Propose_diagram_color.png" width="1280px" height="720px" />
+<img src="img/legal_query_rag.png"/>
 
 Key features:
 - 13% improvement in Hit Rate
