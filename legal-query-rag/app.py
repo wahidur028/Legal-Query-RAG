@@ -1,3 +1,16 @@
+# --- MUST BE VERY FIRST ---
+import logging
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+
+# Avoid duplicate tracer setup
+if not isinstance(trace.get_tracer_provider(), TracerProvider):
+    trace.set_tracer_provider(TracerProvider())
+
+# Optionally suppress OpenTelemetry warnings
+logging.getLogger("opentelemetry").setLevel(logging.ERROR)
+
+
 # Import necessary libraries
 import os
 import re
@@ -24,8 +37,7 @@ from trulens.providers.openai import OpenAI
 from trulens.dashboard.display import get_feedback_result
 from trulens.apps.llamaindex.guardrails import WithFeedbackFilterNodes
 import numpy as np
-from crewai import Agent, Task, Crew
-from crewai import LLM
+from crew_ai import crew_prompt, crew_llm
 from dotenv import load_dotenv
 import os
 
@@ -59,8 +71,7 @@ def initialize_faiss_index():
 
 initialize_faiss_index()
 
-
-# # Initialize Models from local directory
+# # Initialize LLM and Embedding Model
 # llm = HuggingFaceLLM(
 #     model_name="wahid028/llama-3-merged-linear",
 #     tokenizer_name="wahid028/llama-3-merged-linear",
@@ -70,7 +81,6 @@ initialize_faiss_index()
 # embed_model = HuggingFaceEmbedding(model_name="wahid028/GIST-Law-Embed")
 
 
-# Initialize Models from remote directory and local directory
 llm = Groq(model="llama3-70b-8192", api_key=GROQ_API_KEY)
 embed_model = HuggingFaceEmbedding(model_name="avsolatorio/GIST-large-Embedding-v0")
 
@@ -96,7 +106,7 @@ def process_pdf(files):
 
         # Load documents
         document_reader = SimpleDirectoryReader(data_path)
-        documents = document_reader.load_data() # newly added num_workers=2
+        documents = document_reader.load_data(num_workers=4) # newly added num_workers=2
 
         print("Loading document done")
 
@@ -166,7 +176,7 @@ def process_pdf(files):
             retriever=hybrid_retriever,
             node_postprocessors=[reranker],
             response_synthesizer=response_synthesizer,
-            # streaming = True, # Newly added, Enable streaming mode for large datasets
+            streaming = True, # Newly added, Enable streaming mode for large datasets
         )
         print("Query engine initialization done")
 
@@ -181,76 +191,6 @@ def process_pdf(files):
         print(f"❌ Error: {str(e)}")
         return f"❌ Error: {str(e)}"
 
-
-
-# Initialize LLM and CrewAI agents
-llm = LLM(
-    model="groq/llama-3.1-8b-instant",
-    temperature=0.7,
-    max_tokens=512,
-    top_p=0.9,
-    frequency_penalty=0.1,
-    presence_penalty=0.1,
-    stop=["END"],
-    seed=42
-)
-
-Prompt_Engineer = Agent(
-    role="Expert Prompt Engineer",
-    goal="Craft and optimize prompts to improve AI's performance.",
-    backstory="""As an expert in prompt engineering, you specialize in refining and optimizing queries 
-                to enhance AI-generated responses. Your deep understanding of language processing and 
-                user intent allows you to create clear, effective, and contextually appropriate prompts.""",
-    allow_delegation=False,
-    llm=llm,
-    max_retry_limit=1,
-    verbose=True
-)
-
-LLM_Agent = Agent(
-    role="General AI Assistant",
-    goal="Generate responses to user queries based on the model own knowledge.",
-    backstory="""An AI assistant designed to provide information and answer questions based on its training data.""",
-    allow_delegation=False,
-    llm=llm,
-    max_retry_limit=1,
-    verbose=True
-)
-
-Prompt_Engineering_Task = Task(
-    description=(
-        "1. Take the initial query {topic} that did not pass evaluation.\n"
-        "2. Generate a refined versions of that query that maintain relevance but improve clarity.\n"
-        "3. Keep the new query short, simple, concise and clear."
-        "4. Each iteration generate only one query."
-        "5. Always write the refined query inside the <answer></answer> tag."
-    ),
-    expected_output="The refined query: 'Refined query statement here'",
-    agent=Prompt_Engineer,
-)
-
-LLM_Agent_Task = Task(
-    description=(
-        "1. Take the initial query {topic} that did not pass evaluation.\n"
-        "2. Generate answer from models pre-trained knowledge.\n"
-        "3. Keep the response short, simple, concise and clear within 3 sentencs."
-        "4. Always write the response inside the <answer>  </answer> tags."
-    ),
-    expected_output="<answer> ... </answer>",
-    agent=LLM_Agent,
-)
-
-crew_prompt = Crew(
-    agents=[Prompt_Engineer],
-    tasks=[Prompt_Engineering_Task],
-    verbose=True
-)
-
-crew_llm = Crew(
-    agents=[LLM_Agent],
-    tasks=[LLM_Agent_Task],
-    verbose=True
-)
 
 
 # Function to refine query
@@ -299,7 +239,7 @@ def query_model(user_query):
     if query_engine is None:
         return "⚠️ Please upload documents first."
     
-    max_attempts = 3
+    max_attempts = 1
     attempt = 0
     
     while attempt < max_attempts:
@@ -416,7 +356,7 @@ def query_model(user_query):
     
     # return "⚠️ Sorry, we couldn't find your answer."
     # return str(response)
-    return str(f"⚠️ Warning: The response doesn't pass the evaluation critaria properly. This response may not be fully accurate.\n\n ## Final Response: {response}")
+    return str(f"⚠️ Warning: The response doesn't pass the evaluation criteria properly. This response may not be fully accurate.\n\n ## Final Response: {response}")
 
 
 # Hybrid Retriever class
@@ -472,4 +412,7 @@ with gr.Blocks() as demo:
     submit_button.click(query_model, inputs=[user_query], outputs=[response_output])
     user_query.submit(query_model, inputs=[user_query], outputs=[response_output])
 
-demo.launch(share=True)
+# demo.launch(share=True)
+# ✅ Prevent multiple launches & TracerProvider conflict
+if __name__ == "__main__":
+    demo.launch(share=True,share_server_address="ai.libervance.com:7000")
