@@ -7,28 +7,24 @@
 > Published in *IEEE Access* · [Read the paper ↗](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=10887211)
 
 ### 👥 Authors
-- [**Rahman S M Wahidur**](https://scholar.google.com/citations?user=0_GwJz4AAAAJ&hl=en&oi=ao)
-- **Sumin Kim**
-- **Haeung Cho**
-- [**David S. Bhatti**](https://scholar.google.com/citations?user=RU0j8cMAAAAJ&hl=en)
-- [**Heung-No Lee**](https://scholar.google.com/citations?user=lRlN_40AAAAJ&hl=en)
+- [**Rahman S M Wahidur**](https://scholar.google.com/citations?user=0_GwJz4AAAAJ&hl=en&oi=ao), [**SUMIN KIM**], [**HAEUNG CHO**], [**DAVID S. BHATTI**](https://scholar.google.com/citations?user=RU0j8cMAAAAJ&hl=en), [**Heung-No Lee**](https://scholar.google.com/citations?user=lRlN_40AAAAJ&hl=en)
 
 ---
 
 ## 🔍 Overview
+LQ-RAG explicitly incorporates an agent-based iterative refinement mechanism during inference. It first generates an initial response to a user query and then utilizes an evaluation agent to assess its quality based on contextual relevance and factual grounding. If the response does not meet predefined criteria, the evaluation agent provides feedback to the prompt-engineering agent, which modifies the query to improve the next response. This iterative feedback loop continues until the evaluation scores approach optimal values.
 
-**LQ-RAG** explicitly incorporates an agent-based iterative refinement mechanism during inference. It first generates an initial response to a user query and then utilizes an evaluation agent to assess its quality based on contextual relevance and factual grounding. If the response does not meet predefined criteria, the evaluation agent provides feedback to the prompt-engineering agent, which modifies the query to improve the next response. This iterative feedback loop continues until the evaluation scores approach optimal values.
 ---
 
 ## 🧠 Architecture Components
 
-- 🧾 **Evaluation Agent** – custom scorer to evaluate factual correctness and legal context
-- 🧠 **Response Generator** – LLM fine-tuned on legal texts
-- 🛠️ **Prompt Engineering Agent** – dynamically adapts queries based on evaluation feedback
-- ⚖️ **Legal Embedding Model** – specialized vector store for legal document retrieval
+- **Evaluation Agent** – custom scorer to evaluate factual correctness and legal context
+- **Response Generator** – LLM fine-tuned on legal texts
+- **Prompt Engineering Agent** – dynamically adapts queries based on evaluation feedback
+- **Legal Embedding Model** – specialized vector store for legal document retrieval
 
 <p align="center">
-  <img src="img/legal_query_rag.png" width="700"/>
+  <img src="img/legal_query_rag.png"/>
 </p>
 
 ---
