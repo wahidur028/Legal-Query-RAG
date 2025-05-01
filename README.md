@@ -21,7 +21,7 @@ The schematic diagram of the proposed Legal Query RAG. The diagram is divided in
 
 ---
 
-## 🧠 Architecture Components
+## 🧠 Architecture Components & Execution Flow
 
 - **Custom Evaluation Agent** – custom scorer to evaluate factual correctness and legal context
 - **Fine-Tuned Response Generator** – LLM fine-tuned on legal texts
