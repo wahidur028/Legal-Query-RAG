@@ -35,8 +35,8 @@ The schematic diagram of the proposed Legal Query RAG. The diagram is divided in
 - **+24%** performance gain over general LLM baselines
 - **+23%** relevance score improvement vs. naive RAG setups
 
-<p align="left">
-  <img src="img/Model_tasks_performance.png"/>
+<p align="center">
+  <img src="img/results.png"/>
 </p>
 
 ## 🚀 Installation
