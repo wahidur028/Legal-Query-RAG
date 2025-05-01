@@ -50,11 +50,3 @@ pip install -r requirements.txt
 
 # Run the application
 python app.py
-
-## 📈 Key Results
-
-- **+13%** Hit Rate improvement
-- **+15%** boost in Mean Reciprocal Rank (MRR)
-- **+24%** performance gain over general LLM baselines
-- **+23%** relevance score improvement vs. naive RAG setups
----
