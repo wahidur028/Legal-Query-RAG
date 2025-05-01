@@ -36,21 +36,18 @@ LQ-RAG explicitly incorporates an agent-based iterative refinement mechanism dur
 - **+23%** relevance score improvement vs. naive RAG setups
 ---
 
+## Citation
 
+If you use this work in your research or find it helpful, please cite:
 
-
-
-
-
-
-
-
-
-
-
-## Installation
-
-```bash
-git clone https://github.com/yourusername/legal-query-rag.git
-cd legal-query-rag
-pip install -r requirements.txt
+```bibtex
+@ARTICLE{10887211,
+  author={Wahidur, Rahman S. M. and Kim, Sumin and Choi, Haeung and Bhatti, David S. and Lee, Heung-No},
+  journal={IEEE Access}, 
+  title={Legal Query RAG}, 
+  year={2025},
+  volume={13},
+  number={},
+  pages={36978-36994},
+  keywords={Law;Retrieval augmented generation;Accuracy;Tuning;Semantics;Hybrid power systems;Adaptation models;Training;Reliability;Mathematical models;Retrieval-augmented generation;legal query;LLM agent;information retrieval},
+  doi={10.1109/ACCESS.2025.3542125}}
