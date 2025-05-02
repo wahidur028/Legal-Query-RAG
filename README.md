@@ -7,7 +7,7 @@
 > Published in *IEEE Access* · [Read the paper ↗](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=10887211)
 
 ### 👥 Authors
-- [**RAHMAN S M WAHIDUR**](https://scholar.google.com/citations?user=0_GwJz4AAAAJ&hl=en&oi=ao), **SUMIN KIM**, **HAEUNG CHO**, [**DAVID S. BHATTI**](https://scholar.google.com/citations?user=RU0j8cMAAAAJ&hl=en), [**HEUNG-NO LEE**](https://scholar.google.com/citations?user=lRlN_40AAAAJ&hl=en)
+- [**RAHMAN S M WAHIDUR**](https://scholar.google.com/citations?user=0_GwJz4AAAAJ&hl=en&oi=ao), [**SUMIN KIM**](https://scholar.google.co.kr/citations?user=JVga-AYAAAAJ&hl=en), **HAEUNG CHO**, [**DAVID S. BHATTI**](https://scholar.google.com/citations?user=RU0j8cMAAAAJ&hl=en), [**HEUNG-NO LEE**](https://scholar.google.com/citations?user=lRlN_40AAAAJ&hl=en)
 ---
 
 ## 🔍 Overview
