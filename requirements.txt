@@ -14,5 +14,5 @@ pypdf==6.10.0
 python-dotenv==1.2.3
 sentence-transformers==6.0.0
 trulens==2.13.1
-trulens-apps-llamaindex==2.13.0
+trulens-apps-llamaindex==2.13.1
 trulens-providers-openai==2.13.1
