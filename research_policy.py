@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -83,6 +84,8 @@ def run_feedback_loop(
     for attempt in range(max(0, max_refinements) + 1):
         attempts = attempt + 1
         response, scores, evaluation_error = run_once(query)
+        if evaluation_error is not None:
+            break
         if evaluation_error is None and quality_passes(scores, thresholds):
             return LoopOutcome(response, scores, query, attempts, True, None)
         if attempt >= max_refinements:

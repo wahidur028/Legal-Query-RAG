@@ -9,7 +9,7 @@
 5. Run:
 
 ```bash
-python -m compileall -q app.py crew_ai.py prompt.py research_policy.py scripts tests
+python -m compileall -q app.py evaluation.py prompt.py query_agents.py research_policy.py scripts tests
 python -m unittest discover -s tests -v
 python scripts/audit_repository.py
 ```

@@ -70,6 +70,27 @@ class QualityPolicyTests(unittest.TestCase):
         self.assertEqual(calls, ["same"])
         self.assertFalse(outcome.passed)
 
+    def test_evaluation_error_stops_without_refinement(self) -> None:
+        calls: list[str] = []
+
+        def run_once(query: str):
+            calls.append(query)
+            return "unverified", QualityScores(), "evaluator unavailable"
+
+        def refine(query: str, scores: QualityScores) -> str:
+            raise AssertionError("refinement must not run without evaluator feedback")
+
+        outcome = run_feedback_loop(
+            "original",
+            run_once,
+            refine,
+            self.thresholds,
+            max_refinements=2,
+        )
+        self.assertEqual(calls, ["original"])
+        self.assertFalse(outcome.passed)
+        self.assertEqual(outcome.evaluation_error, "evaluator unavailable")
+
 
 if __name__ == "__main__":
     unittest.main()

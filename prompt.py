@@ -2,7 +2,6 @@
 
 from llama_index.core import PromptTemplate
 
-
 custom_prompt = PromptTemplate(
     """You answer only from the supplied legal-document context.
 

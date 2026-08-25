@@ -14,7 +14,6 @@ from typing import Any
 
 import faiss
 import gradio as gr
-import numpy as np
 from dotenv import load_dotenv
 from llama_index.core import (
     Settings,
@@ -33,14 +32,14 @@ from llama_index.postprocessor.sbert_rerank import SentenceTransformerRerank
 from llama_index.retrievers.bm25 import BM25Retriever
 from llama_index.vector_stores.faiss import FaissVectorStore
 
-from crew_ai import generate_ungrounded_answer, refine_query
+from evaluation import evaluate_response
 from prompt import custom_prompt
+from query_agents import generate_ungrounded_answer, refine_query
 from research_policy import (
     QualityScores,
     QualityThresholds,
     run_feedback_loop,
 )
-
 
 ROOT = Path(__file__).resolve().parent
 RUNTIME_DIR = ROOT / ".runtime"
@@ -51,6 +50,7 @@ logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 LOGGER = logging.getLogger("legal_query_rag")
 
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+OPENAI_EVALUATOR_MODEL = os.getenv("OPENAI_EVALUATOR_MODEL", "gpt-4o-mini")
 EMBEDDING_MODEL = os.getenv(
     "EMBEDDING_MODEL", "avsolatorio/GIST-large-Embedding-v0"
 )
@@ -202,65 +202,27 @@ def process_pdf(files: list[Any] | None) -> str:
         return f"Indexing failed: {exc}"
 
 
-def _feedback_scores(results: dict[Any, Any]) -> QualityScores:
-    values: dict[str, float] = {}
-    for definition, result in results.items():
-        name = str(getattr(definition, "name", ""))
-        value = getattr(result, "result", None)
-        if value is not None:
-            values[name.lower()] = float(value)
-    return QualityScores(
-        answer_relevance=values.get("answer relevance"),
-        context_relevance=values.get("context relevance"),
-        groundedness=values.get("groundedness"),
-    )
-
-
 def _query_and_evaluate(query: str) -> tuple[Any, QualityScores, str | None]:
-    """Execute one query and synchronously collect its evaluator results."""
+    """Execute one query, then evaluate that exact response once."""
 
     assert query_engine is not None
+    response = query_engine.query(query)
     openai_key = os.getenv("OPENAI_API_KEY")
     if not openai_key:
-        return query_engine.query(query), QualityScores(), "OPENAI_API_KEY is missing"
+        return response, QualityScores(), "OPENAI_API_KEY is missing"
 
     try:
-        from trulens.apps.llamaindex import TruLlama
-        from trulens.core import Feedback
         from trulens.providers.openai import OpenAI
 
-        provider = OpenAI(api_key=openai_key)
-        context = TruLlama.select_context(query_engine)
-        feedbacks = [
-            Feedback(
-                provider.groundedness_measure_with_cot_reasons,
-                name="Groundedness",
-            ).on(context.collect()).on_output(),
-            Feedback(
-                provider.relevance_with_cot_reasons,
-                name="Answer Relevance",
-            ).on_input_output(),
-            Feedback(
-                provider.context_relevance_with_cot_reasons,
-                name="Context Relevance",
-            ).on_input().on(context).aggregate(np.mean),
-        ]
-        recorder = TruLlama(
-            query_engine,
-            app_name="Legal_Query_RAG",
-            app_version="repaired-v1",
-            feedbacks=feedbacks,
+        provider = OpenAI(
+            model_engine=OPENAI_EVALUATOR_MODEL,
+            api_key=openai_key,
         )
-        with recorder as recording:
-            response = query_engine.query(query)
-        record = recording.records[-1]
-        scores = _feedback_scores(
-            record.wait_for_feedback_results(feedback_timeout=180)
-        )
+        scores = evaluate_response(provider, query, response)
         return response, scores, None
     except Exception as exc:
         LOGGER.exception("TruLens evaluation failed")
-        return query_engine.query(query), QualityScores(), str(exc)
+        return response, QualityScores(), str(exc)
 
 
 def _source_list(response: Any) -> str:

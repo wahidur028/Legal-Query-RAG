@@ -3,7 +3,7 @@
 ## What this repository currently supports
 
 - A runnable demonstration of hybrid sparse/dense retrieval, recursive chunks, reranking, response synthesis, LLM-based evaluation, and query refinement.
-- A pinned dependency snapshot dated 2026-08-25.
+- Resolver-tested direct and compatibility pins dated 2026-08-25.
 - Deterministic tests for threshold and feedback-loop control logic.
 - Static repository checks for common secrets, invalid notebooks, and duplicate PDFs.
 
@@ -29,3 +29,5 @@ Add the following without using the protected test set for development:
 ## Interpretation rule
 
 LLM-judge scores are measurements from a fallible evaluator, not ground truth. Record the evaluator model, prompt, temperature, provider version, and repeated-judge reliability. Validate judge decisions against human annotations on a protected sample before using thresholds as scientific evidence.
+
+The runtime makes direct TruLens provider calls and does not create a TruLens trace database. Set `OPENAI_EVALUATOR_MODEL` explicitly and retain application logs and raw experiment outputs for any formal evaluation run.

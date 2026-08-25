@@ -28,7 +28,7 @@ jobs:
           python -m pip install --dry-run -r requirements.txt
 
       - name: Compile Python files
-        run: python -m compileall -q app.py crew_ai.py prompt.py research_policy.py scripts tests
+        run: python -m compileall -q app.py evaluation.py prompt.py query_agents.py research_policy.py scripts tests
 
       - name: Run deterministic tests
         run: python -m unittest discover -s tests -v

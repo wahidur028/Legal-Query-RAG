@@ -12,7 +12,7 @@ LQ-RAG combines dense and BM25 retrieval, recursive chunks, cross-encoder rerank
 
 ## What was repaired
 
-The original public tree had a broken installation path, a retired Groq model ID, an embedded notebook credential, no CI, and a feedback loop that refined a failed query but exited before executing the refined query. The repaired version provides a root-level runnable app, current pinned dependencies, secret-safe configuration, deterministic loop tests, CI, repository auditing, source labels, conservative abstention, and local-only serving by default.
+The original public tree had a broken installation path, a retired Groq model ID, an embedded notebook credential, no CI, and a feedback loop that refined a failed query but exited before executing the refined query. The repaired version provides a root-level runnable app, a dependency-compatible environment, secret-safe configuration, deterministic loop and evaluation tests, CI, repository auditing, source labels, conservative abstention, and local-only serving by default.
 
 See [CHANGELOG.md](CHANGELOG.md) for the complete change list and [REPRODUCIBILITY.md](REPRODUCIBILITY.md) for the evidence boundary.
 
@@ -65,6 +65,7 @@ Copy [.env.example](.env.example) to `.env`. Never commit `.env`.
 | Variable | Default | Purpose |
 |---|---:|---|
 | `GROQ_MODEL` | `llama-3.3-70b-versatile` | Current Groq production generator/refiner model |
+| `OPENAI_EVALUATOR_MODEL` | `gpt-4o-mini` | TruLens RAG-triad judge model |
 | `EMBEDDING_MODEL` | `avsolatorio/GIST-large-Embedding-v0` | Dense embedding model |
 | `RERANKER_MODEL` | `BAAI/bge-reranker-large` | Cross-encoder reranker |
 | `MAX_REFINEMENTS` | `2` | Maximum refined queries after the original query |
@@ -87,10 +88,11 @@ Do not present a successful app launch or a green CI check as reproduction of th
 ```text
 .
 ├── app.py                     # Gradio application and RAG orchestration
-├── crew_ai.py                 # Lazy query-refinement and optional fallback agents
+├── evaluation.py              # Direct TruLens RAG-triad evaluation
+├── query_agents.py            # Lazy query-refinement and optional fallback prompts
 ├── prompt.py                  # Document-grounded synthesis prompt
 ├── research_policy.py         # Pure thresholds and feedback-loop control logic
-├── requirements.txt           # Dated dependency snapshot
+├── requirements.txt           # Validated direct and compatibility pins
 ├── notebooks/                 # Original demonstration and fine-tuning notebooks
 ├── data/                      # Bundled PDFs plus dataset card
 ├── scripts/audit_repository.py
@@ -103,7 +105,7 @@ Do not present a successful app launch or a green CI check as reproduction of th
 These checks do not require API keys or model downloads:
 
 ```bash
-python -m compileall -q app.py crew_ai.py prompt.py research_policy.py scripts tests
+python -m compileall -q app.py evaluation.py prompt.py query_agents.py research_policy.py scripts tests
 python -m unittest discover -s tests -v
 python scripts/audit_repository.py
 ```

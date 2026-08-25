@@ -15,6 +15,7 @@ Audit date: 2026-08-25
 - Low evidence triggered a model-only legal answer by default.
 - Gradio launched through a hard-coded public share server.
 - Dependencies were unpinned, included unused packages, and installed `bitsandbytes` directly from a Git repository.
+- The first repaired dependency set was still unsatisfiable: CrewAI required OpenAI SDK 2.x while the TruLens OpenAI provider required 1.x; Gradio 6 required Hugging Face Hub 1.x while the selected Transformers line required a version below 1.0; and the TruLens LlamaIndex recorder pulled an incompatible umbrella LlamaIndex package.
 - The data directory contained four exact duplicate-PDF groups and no provenance record.
 - No GitHub Actions workflow, security policy, release, or license file was present.
 
@@ -22,7 +23,9 @@ Audit date: 2026-08-25
 
 - Root-level runnable layout and corrected quick start.
 - Secret removed from the current notebook tree; `.env.example` and `.gitignore` added.
-- Current Groq production model identifier and dated dependency snapshot.
+- Current Groq production model identifier and a resolver-tested compatibility set.
+- Direct Groq refinement prompts replace the unnecessary CrewAI wrapper while retaining the same role, goal, model, and tagged-output contract.
+- Direct TruLens provider calls replace the incompatible LlamaIndex recorder while retaining answer relevance, mean context relevance, and groundedness scoring.
 - Dynamic FAISS dimension, runtime-only upload directory, safe copying, and local-only serving default.
 - One query execution per evaluated attempt; refined queries are executed within a bounded loop.
 - Strict all-metric pass rule; missing evaluation is reported as unverified.
@@ -34,7 +37,10 @@ Audit date: 2026-08-25
 ## Validation completed
 
 - Python compilation passed for application, policy, scripts, and tests.
-- Five deterministic unit tests passed.
+- Ten deterministic policy and direct-evaluation unit tests passed.
+- The complete dependency set resolved under Python 3.11.15 and Python 3.12.13.
+- A clean CPU dependency installation completed in an isolated Python 3.11.15 environment; the installed-package compatibility check passed.
+- The application, Gradio interface, Groq adapter, and three required TruLens provider methods imported and initialized without real credentials or network inference.
 - Repository safety/structure audit passed.
 - Secret-pattern scan found no remaining Hugging Face, OpenAI-style, or Groq tokens in the repaired tree.
 - Notebook JSON schemas parsed successfully.

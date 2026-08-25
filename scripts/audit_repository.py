@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Deterministic, dependency-free repository audit used by CI."""
 
 from __future__ import annotations
@@ -10,7 +9,6 @@ import re
 import sys
 from collections import defaultdict
 from pathlib import Path
-
 
 ROOT = Path(__file__).resolve().parents[1]
 TEXT_SUFFIXES = {".env", ".ipynb", ".json", ".md", ".py", ".toml", ".txt", ".yaml", ".yml"}
