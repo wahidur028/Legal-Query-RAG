@@ -6,40 +6,49 @@
 
 Research-code repository for **“Legal Query RAG,”** published in *IEEE Access* 13 (2025), 36978–36994.
 
-LQ-RAG combines dense and BM25 retrieval, recursive chunks, cross-encoder reranking, document-grounded response synthesis, LLM-based quality evaluation, and evaluator-guided query refinement.
+LQ-RAG explicitly incorporates an agent-based iterative refinement mechanism during inference. It first generates an initial response to a user query and then utilizes an evaluation agent to assess its quality based on contextual relevance and factual grounding. If the response does not meet predefined criteria, the evaluation agent provides feedback to the prompt-engineering agent, which modifies the query to improve the next response. This iterative feedback loop continues until the evaluation scores approach optimal values. 
 
 > **Research and safety notice:** This is a research prototype, not legal advice. It can be wrong. Do not use it as the sole basis for a legal decision, and do not upload confidential or privileged material to an untrusted deployment.
 
-## Current validation status
+## Architecture described in the paper
 
-The dependency conflict and feedback-loop defects in the original public prototype have been repaired, but the repository is **not yet certified as a complete reproduction of the paper**.
+Section IV, Figure 1, and Algorithms 1-3 of the paper define two connected components: a **Fine-Tuning Layer** and a **RAG Layer with recursive feedback**.
 
-| Validation layer | Current status | Evidence boundary |
-|---|---|---|
-| Dependency resolution | Passing | GitHub Actions performs a Python 3.11 resolver dry run |
-| Clean local installation | Passing on the repaired Windows/Python 3.11 test environment | This is not yet repeated automatically in CI |
-| Python compilation | Passing | Production files, scripts, and tests compile |
-| Deterministic logic tests | 10 passing | Evaluation parsing, score validation, thresholds, refinement execution, stalls, and evaluator failures |
-| Repository safety audit | Passing after excluding ignored local environments | Checks committable files, required files, notebooks, common credential patterns, and duplicate PDFs |
-| Offline end-to-end integration test | Not yet implemented | PDF-to-answer behavior is not yet exercised by one deterministic automated test |
-| Live Groq/OpenAI smoke test | Not yet certified | Provider access, model downloads, indexing, generation, and evaluation still require a controlled test |
-| Paper-result reproduction | Not established | Complete immutable datasets, manifests, checkpoints, raw outputs, seeds, and benchmark scripts are not present |
+### 1. Fine-Tuning Layer
 
-A green CI badge proves only the checks implemented in the workflow. It does not prove that every external model and API works, and it does not reproduce the numerical results reported in the paper.
+The paper first prepares two domain-adapted models before runtime retrieval begins.
 
-## System flow
+**Embedding-model path**
 
-1. Copy uploaded PDFs into ignored runtime storage.
-2. Parse the documents and create base chunks plus smaller recursive chunks.
-3. Retrieve candidates using dense FAISS retrieval and sparse BM25 retrieval.
-4. Remove duplicate nodes and rerank the combined candidates with a cross-encoder.
-5. Generate an answer from the retrieved document context.
-6. Evaluate answer relevance, context relevance, and groundedness for that exact response.
-7. If any required score is below its threshold, send the failed scores to the query-refinement prompt and execute the refined query.
-8. Stop when all thresholds pass, refinement stalls, evaluation fails, or the configured refinement budget is exhausted.
-9. Abstain by default when document support remains insufficient.
+1. Collect an unstructured legal corpus, denoted by `C_legal`.
+2. Preprocess a subset, `C_sub-legal`, and divide it into manageable passages.
+3. Use an LLM-based data generator to create synthetic query-context pairs, `D_synthetic`, with identifiers linking every generated query to its source passage.
+4. Split the synthetic dataset into training and evaluation sets.
+5. Fine-tune GIST Large Embedding v0 with Multiple Negatives Ranking Loss so matched query-context embeddings move closer while unmatched pairs move farther apart.
+6. Evaluate and retain the resulting legal-domain embedding model.
 
-The optional model-only fallback is disabled because weak document support must not silently become unsupported legal guidance.
+**Generative-model path**
+
+1. Prepare a legal question-answering dataset, `D_QA`, and a general instruction dataset, `D_Instr`.
+2. Fine-tune LLaMA-3-8B separately on the two datasets using LoRA.
+3. Linearly merge the two fine-tuned variants into the paper's Hybrid Fine-tuned Model (HFM).
+4. Evaluate the merged model on domain-specific evaluation datasets.
+
+### 2. RAG Layer and recursive feedback
+
+1. Ingest the remaining legal corpus, `C_rem`, and convert it into document objects.
+2. Split the documents into chunks, encode them with the fine-tuned embedding model, create a FAISS index, and store the index in the vector database.
+3. Embed the user's legal query with the same embedding model.
+4. Use the ReAct agent described in the paper to select query-engine tools.
+5. Retrieve candidate passages through hybrid search: BM25 supplies lexical matches and dense passage retrieval supplies semantic matches from the vector index.
+6. Combine the retrieved candidates, select the top results, and rerank them to produce `C_re-ranked`.
+7. Construct a prompt from the system instructions, original user query, and reranked context.
+8. Generate an initial response with the HFM.
+9. Send that exact query-response-context combination to the GPT-4 evaluation agent. Using the paper's evaluation procedure, the agent measures context relevance, groundedness, and answer relevance.
+10. Return the response when all bounded criteria are satisfied.
+11. Otherwise, send the query and evaluation feedback to the prompt-engineering agent, produce a modified query, and repeat retrieval, reranking, generation, and evaluation until the criteria pass or the feedback budget is exhausted.
+
+Figure 1 and the Section IV prose state that a modified query returns to the RAG pipeline and repeats retrieval and generation. Algorithm 3 presents this loop in abbreviated form without restating every retrieval operation inside the loop.
 
 ## Requirements
 
