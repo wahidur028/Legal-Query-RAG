@@ -1,0 +1,18 @@
+# Validated dependency snapshot: 2026-08-25
+crewai[litellm]==1.15.17
+faiss-cpu==1.15.0
+gradio==6.26.0
+llama-index-core==0.14.24
+llama-index-embeddings-huggingface==0.7.0
+llama-index-llms-groq==0.5.0
+llama-index-postprocessor-sbert-rerank==0.5.0
+llama-index-readers-file==0.6.0
+llama-index-retrievers-bm25==0.7.1
+llama-index-vector-stores-faiss==0.6.0
+numpy==2.3.5
+pypdf==6.10.0
+python-dotenv==1.2.3
+sentence-transformers==6.0.0
+trulens==2.13.1
+trulens-apps-llamaindex==2.13.0
+trulens-providers-openai==2.13.1

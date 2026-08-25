@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use this software, cite the associated IEEE Access paper."
+title: "Legal Query RAG"
+type: software
+authors:
+  - family-names: Wahidur
+    given-names: Rahman S. M.
+  - family-names: Kim
+    given-names: Sumin
+  - family-names: Choi
+    given-names: Haeung
+  - family-names: Bhatti
+    given-names: David S.
+  - family-names: Lee
+    given-names: Heung-No
+repository-code: "https://github.com/wahidur028/Legal-Query-RAG"
+preferred-citation:
+  type: article
+  title: "Legal Query RAG"
+  authors:
+    - family-names: Wahidur
+      given-names: Rahman S. M.
+    - family-names: Kim
+      given-names: Sumin
+    - family-names: Choi
+      given-names: Haeung
+    - family-names: Bhatti
+      given-names: David S.
+    - family-names: Lee
+      given-names: Heung-No
+  journal: "IEEE Access"
+  year: 2025
+  volume: 13
+  start: 36978
+  end: 36994
+  doi: "10.1109/ACCESS.2025.3542125"

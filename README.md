@@ -1,76 +1,135 @@
-# 🏛️ Legal Query RAG (LQ-RAG)
+# Legal Query RAG (LQ-RAG)
 
-[![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Validate repository](https://github.com/wahidur028/Legal-Query-RAG/actions/workflows/validate.yml/badge.svg)](https://github.com/wahidur028/Legal-Query-RAG/actions/workflows/validate.yml)
+[![Python 3.11](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
+[![DOI](https://img.shields.io/badge/DOI-10.1109%2FACCESS.2025.3542125-blue)](https://doi.org/10.1109/ACCESS.2025.3542125)
 
-> Official implementation of **"Legal Query RAG: A Retrieval-Augmented Generation Framework with Recursive Feedback for Legal Applications"**  
-> Published in *IEEE Access* · [Read the paper ↗](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=10887211)
+Official research-code repository for **“Legal Query RAG”**, published in *IEEE Access* 13 (2025), 36978–36994.
 
-### 👥 Authors
-- [**RAHMAN S M WAHIDUR**](https://scholar.google.com/citations?user=0_GwJz4AAAAJ&hl=en&oi=ao), [**SUMIN KIM**](https://scholar.google.co.kr/citations?user=JVga-AYAAAAJ&hl=en), [**HAEUNG CHO**](https://scholar.google.com/citations?hl=ko&user=EOmBWjUAAAAJ&view_op=list_works&sortby=pubdate), [**DAVID S. BHATTI**](https://scholar.google.com/citations?user=RU0j8cMAAAAJ&hl=en), [**HEUNG-NO LEE**](https://scholar.google.com/citations?user=lRlN_40AAAAJ&hl=en)
----
+LQ-RAG combines dense and BM25 retrieval, recursive chunks, cross-encoder reranking, response synthesis, LLM-based quality evaluation, and evaluator-guided query refinement.
 
-## 🔍 Overview
+> **Research and safety notice:** This is a research prototype. It can be wrong, is not legal advice, and must not be used as the sole basis for legal decisions. Do not upload confidential or privileged material to an untrusted deployment.
 
-LQ-RAG explicitly incorporates an agent-based iterative refinement mechanism during inference. It first generates an initial response to a user query and then utilizes an evaluation agent to assess its quality based on contextual relevance and factual grounding. If the response does not meet predefined criteria, the evaluation agent provides feedback to the prompt-engineering agent, which modifies the query to improve the next response. This iterative feedback loop continues until the evaluation scores approach optimal values. The below figure illustrates the overall schematic diagram of the proposed LQ-RAG system.
-<img src="img/network_diagram.png" />
-The schematic diagram of the proposed Legal Query RAG. The diagram is divided into two main components: Fine-Tuning (FT) Layer and RAG Layer. The FT Layer focuses on fine-tuning processes of embedding LLM and generative LLM. On the other hand, the RAG Layer incorporates different RAG modules with fine-tuned LLMs, an evaluation agent, and a feedback system designed to enhance the accuracy and quality of the generated responses.
+## What was repaired
 
+The original public tree had a broken installation path, a retired Groq model ID, an embedded notebook credential, no CI, and a feedback loop that refined a failed query but exited before executing the refined query. The repaired version provides a root-level runnable app, current pinned dependencies, secret-safe configuration, deterministic loop tests, CI, repository auditing, source labels, conservative abstention, and local-only serving by default.
 
-## 🧠 Architecture Components & Execution Flow
+See [CHANGELOG.md](CHANGELOG.md) for the complete change list and [REPRODUCIBILITY.md](REPRODUCIBILITY.md) for the evidence boundary.
 
-- **Custom Evaluation Agent** – custom scorer to evaluate factual correctness and legal context
-- **Fine-Tuned Response Generator** – LLM fine-tuned on legal texts
-- **Prompt Engineering Agent** – dynamically adapts queries based on evaluation feedback
-- **Legal Embedding Model** – specialized vector store for legal document retrieval
+## System flow
 
-<p align="center">
-  <img src="img/execution flow.png"/>
-</p>
+1. Copy uploaded PDFs into ignored runtime storage.
+2. Split each document into base and recursive sub-chunks.
+3. Retrieve with dense FAISS and sparse BM25 retrievers.
+4. Deduplicate and rerank retrieved nodes.
+5. Generate an answer only from retrieved context.
+6. Evaluate answer relevance, context relevance, and groundedness.
+7. If all prespecified thresholds are not met, pass the failed scores to the query-refinement agent and execute the refined query.
+8. Stop on pass, stalled refinement, or the refinement budget; otherwise abstain by default.
 
-## 📈 Key Results
+The optional model-only fallback is disabled because low retrieval support should not silently become unsupported legal guidance.
 
-- **+13%** Hit Rate improvement
-- **+15%** boost in Mean Reciprocal Rank (MRR)
-- **+24%** performance gain over general LLM baselines
-- **+23%** relevance score improvement vs. naive RAG setups
+## Requirements
 
-<p align="center">
-  <img src="img/results.png"/>
-</p>
+- Python 3.11
+- A Groq API key for generation and query refinement
+- An OpenAI API key for the TruLens evaluator
+- Internet access on first run to download the embedding and reranker models
+- Enough memory for the selected embedding and reranker models
 
-## 🚀 Installation
-
-Follow these steps to install and run the project:
+## Quick start
 
 ```bash
-# Clone the repository
 git clone https://github.com/wahidur028/Legal-Query-RAG.git
 cd Legal-Query-RAG
 
-# Install dependencies
-pip install -r requirements.txt
+python -m venv .venv
+source .venv/bin/activate   # Windows PowerShell: .venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 
-# Run the application
+cp .env.example .env       # Windows: copy .env.example .env
+# Edit .env and add GROQ_API_KEY and OPENAI_API_KEY.
+
 python app.py
 ```
-> 📌 **Note**: Before running the application, make sure to update your `.env` file with the required API keys and environment variables.
 
-## 📚 Citation
+Open `http://127.0.0.1:7860`, upload one or more PDFs, click **Upload and index**, and then ask a question.
 
-If you use this work in your research or find it helpful, please cite:
+The default configuration does not create a public Gradio share link. Set `GRADIO_SHARE=true` only when you understand that uploaded documents and model outputs may be exposed through that deployment.
+
+## Configuration
+
+Copy [.env.example](.env.example) to `.env`. Never commit `.env`.
+
+| Variable | Default | Purpose |
+|---|---:|---|
+| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Current Groq production generator/refiner model |
+| `EMBEDDING_MODEL` | `avsolatorio/GIST-large-Embedding-v0` | Dense embedding model |
+| `RERANKER_MODEL` | `BAAI/bge-reranker-large` | Cross-encoder reranker |
+| `MAX_REFINEMENTS` | `2` | Maximum refined queries after the original query |
+| `MIN_ANSWER_RELEVANCE` | `0.60` | Required evaluator score |
+| `MIN_CONTEXT_RELEVANCE` | `0.50` | Required evaluator score |
+| `MIN_GROUNDEDNESS` | `0.60` | Required evaluator score |
+| `ALLOW_UNGROUNDED_FALLBACK` | `false` | Permit model-only fallback; unsafe for most legal uses |
+| `GRADIO_SHARE` | `false` | Create a public share link |
+
+The thresholds reproduce the original prototype's nominal cutoffs, not universally validated legal-safety guarantees. Calibrate them on a protected, human-annotated dataset before making performance or safety claims.
+
+## Reported paper results
+
+The associated paper reports improvements in Hit Rate, MRR, model-task performance, and relevance relative to its stated baselines. Those are **reported-paper results**. This repository does not yet contain the complete immutable datasets, run manifests, raw predictions, seeds, statistical analysis, and one-command benchmark pipeline required for an independent reproduction of every number.
+
+Do not present a successful app launch or a green CI check as reproduction of the paper. CI currently validates repository structure, secret hygiene, Python syntax, and deterministic decision logic.
+
+## Repository layout
+
+```text
+.
+├── app.py                     # Gradio application and RAG orchestration
+├── crew_ai.py                 # Lazy query-refinement and optional fallback agents
+├── prompt.py                  # Document-grounded synthesis prompt
+├── research_policy.py         # Pure thresholds and feedback-loop control logic
+├── requirements.txt           # Dated dependency snapshot
+├── notebooks/                 # Original demonstration and fine-tuning notebooks
+├── data/                      # Bundled PDFs plus dataset card
+├── scripts/audit_repository.py
+├── tests/test_research_policy.py
+└── .github/workflows/validate.yml
+```
+
+## Validate locally
+
+These checks do not require API keys or model downloads:
+
+```bash
+python -m compileall -q app.py crew_ai.py prompt.py research_policy.py scripts tests
+python -m unittest discover -s tests -v
+python scripts/audit_repository.py
+```
+
+The audit reports exact duplicate PDFs as warnings. See [data/DATASET_CARD.md](data/DATASET_CARD.md).
+
+## Credential warning for existing clones and forks
+
+An earlier notebook revision contained a Hugging Face token. The repaired tree removes it, but Git history and forks can retain old content. The token owner must revoke it; deleting the visible line is not sufficient. See [SECURITY.md](SECURITY.md).
+
+## Citation
 
 ```bibtex
 @ARTICLE{10887211,
   author={Wahidur, Rahman S. M. and Kim, Sumin and Choi, Haeung and Bhatti, David S. and Lee, Heung-No},
-  journal={IEEE Access}, 
-  title={Legal Query RAG}, 
+  journal={IEEE Access},
+  title={Legal Query RAG},
   year={2025},
   volume={13},
-  number={},
-  pages={36978-36994},
-  keywords={Law;Retrieval augmented generation;Accuracy;Tuning;Semantics;Hybrid power systems;Adaptation models;Training;Reliability;Mathematical models;Retrieval-augmented generation;legal query;LLM agent;information retrieval},
+  pages={36978--36994},
   doi={10.1109/ACCESS.2025.3542125}
 }
+```
 
+GitHub-compatible citation metadata is also provided in [CITATION.cff](CITATION.cff).
 
+## Licensing status
+
+The previous README displayed a CC BY 4.0 badge, but the repository did not contain a license file. A public repository without an explicit license is not automatically open source. The copyright holders should agree on and commit the license before the repaired release is described as open source. A common structure is a software license such as Apache-2.0 or MIT for code and a separate content/data license only where redistribution rights are established.
