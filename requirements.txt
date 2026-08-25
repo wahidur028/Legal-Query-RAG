@@ -13,7 +13,7 @@ llama-index-retrievers-bm25==0.7.1
 llama-index-vector-stores-faiss==0.6.0
 numpy==2.3.5
 openai==1.109.1
-pypdf==6.10.0
+pypdf==6.16.1
 python-dotenv==1.2.3
 sentence-transformers==5.1.2
 socksio==1.0.0
