@@ -17,5 +17,5 @@ pypdf==6.10.0
 python-dotenv==1.2.3
 sentence-transformers==5.1.2
 socksio==1.0.0
-transformers==4.57.6
+transformers==5.16.1
 trulens-providers-openai==2.13.1
