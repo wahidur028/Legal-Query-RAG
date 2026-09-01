@@ -1,7 +1,7 @@
 # Direct and compatibility pins validated together: 2026-08-25
 faiss-cpu==1.15.0
 gradio==5.49.1
-huggingface-hub==0.36.2
+huggingface-hub==1.29.0
 llama-index-core==0.14.24
 llama-index-embeddings-huggingface==0.7.0
 llama-index-llms-groq==0.5.0
